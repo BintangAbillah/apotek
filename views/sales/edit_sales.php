@@ -64,13 +64,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     </a>
                 </li>
                 <li>
-                    <a href="main_medicine.php" class="bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
+                    <a href="../medicine/main_medicine.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
                         <i class="fa-solid fa-pills"></i>
                         <p>Manage Medicines</p>
                     </a>
                 </li>
                 <li>
-                    <a href="../sales/main_sales.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
+                    <a href="main_sales.php" class="bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
                         <i class="fa-solid fa-money-bill"></i>
                         <p>Sales</p>
                     </a>

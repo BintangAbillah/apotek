@@ -12,6 +12,47 @@ function getMedicines() {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+// Get a single medicine by ID
+function getMedicineById($id) {
+    global $conn;
+    $query = "SELECT id, name, category, stock, price FROM medicines WHERE id = :id AND deleted!='*'";
+    $stmt = $conn->prepare($query);
+    $stmt->execute([':id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+// Get a single medicine by ID
+function getMedicineByName($name) {
+    global $conn;
+    $query = "SELECT price FROM medicines WHERE name = :name AND deleted != '*'";
+    $stmt = $conn->prepare($query);
+    $stmt->bindValue(':name', $name);
+    $stmt->execute();
+    $medicine = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $medicine ? $medicine : ['price' => 0];
+}
+
+
+// Fetch medicine suggestions
+function fetchMedicineSuggestions($name) {
+    global $conn;
+    $query = "SELECT name FROM medicines WHERE LOWER(name) LIKE LOWER(:name) AND deleted!='*' LIMIT 10";
+    $stmt = $conn->prepare($query);
+    $stmt->bindValue(':name', '%' . $name . '%');
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Validate medicine name
+function validateMedicine($name) {
+    global $conn;
+    $query = "SELECT COUNT(*) FROM medicines WHERE name = :name";
+    $stmt = $conn->prepare($query);
+    $stmt->bindValue(':name', $name);
+    $stmt->execute();
+    return $stmt->fetchColumn() > 0;
+}
+
 // Create a new medicine
 function createMedicine($name, $category, $stock, $price) {
     global $conn;
@@ -27,14 +68,6 @@ function createMedicine($name, $category, $stock, $price) {
     ]);
 }
 
-// Get a single medicine by ID
-function getMedicineById($id) {
-    global $conn;
-    $query = "SELECT id, name, category, stock, price FROM medicines WHERE id = :id AND deleted!='*'";
-    $stmt = $conn->prepare($query);
-    $stmt->execute([':id' => $id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
 
 // Update a medicine
 function updateMedicine($id, $name, $category, $stock, $price) {
