@@ -185,7 +185,7 @@ if (isset($_GET['action'])) {
                     document.getElementById('total_price').value = totalPrice;
                     console.log('totalPrice:', totalPrice);
                 } else {
-                    alert('Failed to fetch price for the selected medicine.');
+                    alert('Wrong medicine name.');
                 }
             })
             .catch(error => {
