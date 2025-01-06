@@ -57,9 +57,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     </a>
                 </li>
                 <li>
-                    <a href="../sale/main_sale.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
+                    <a href="../sales/main_sales.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
                         <i class="fa-solid fa-money-bill"></i>
-                        <p>Sale</p>
+                        <p>Sales</p>
                     </a>
                 </li>
                 <li>
