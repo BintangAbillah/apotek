@@ -15,11 +15,13 @@ function getMedicines() {
 // Get a single medicine by ID
 function getMedicineById($id) {
     global $conn;
-    $query = "SELECT id, name, category, stock, price FROM medicines WHERE id = :id AND deleted!='*'";
+    $query = "SELECT id, name, price FROM medicines WHERE id = :id AND deleted != '*'";
     $stmt = $conn->prepare($query);
-    $stmt->execute([':id' => $id]);
+    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
 
 // Get a single medicine by ID
 function getMedicineByName($name) {

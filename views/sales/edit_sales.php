@@ -2,8 +2,12 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
 include '../../includes/auth.php';
+include '../../includes/sales.php';
 include '../../includes/medicine.php';
+
+// Check if user is logged in
 if (!isLoggedIn()) {
     header("Location: ../../auth/login.php");
     exit();
@@ -11,43 +15,44 @@ if (!isLoggedIn()) {
 
 $user = $_SESSION['user'];
 
+// Validate sale ID
 if (!isset($_GET['id'])) {
-    header("Location: main_medicine.php");
+    header("Location: main_sales.php");
     exit();
 }
 
-$medicineId = $_GET['id'];
-$medicine = getMedicineById($medicineId);
+$saleId = $_GET['id'];
+$sale = getSaleById($saleId);
 
-if (!$medicine) {
-    header("Location: main_medicine.php");
+if (!$sale) {
+    header("Location: main_sales.php");
     exit();
 }
 
+// Handle sale update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update') {
     $id = $_POST['id'];
-    $name = $_POST['name'];
-    $category = $_POST['category'];
-    $stock = $_POST['stock'];
-    $price = $_POST['price'];
+    $medicine = $_POST['medicine'];
+    $quantity = $_POST['quantity'];
+    $total_price = $_POST['total_price'];
+    $sold_by = $_POST['sold_by'];
 
-    if (updateMedicine($id, $name, $category, $stock, $price)) {
-        header("Location: ../../views/medicine/main_medicine.php?success=Medicine updated successfully");
+    if (updateSale($id, $medicine, $quantity, $total_price, $sold_by)) {
+        header("Location: ../../views/sales/main_sales.php?success=Sale updated successfully");
         exit();
     } else {
-        header("Location: ../../views/medicine/edit_medicine.php?id=$id&error=Failed to update medicine");
+        header("Location: ../../views/sales/edit_sales.php?id=$id&error=Failed to update sale");
         exit();
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <title>Edit Medicine</title>
-    <!-- Tailwind CSS -->
+    <title>Edit Sale</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/54e497b2de.js" crossorigin="anonymous"></script>
 </head>
 
@@ -55,69 +60,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <div class="flex">
         <!-- Sidebar -->
         <div class="w-64 h-screen bg-gray-800 text-white p-4 sticky top-0">
-            <h2 class="text-2xl font-bold mb-4"><?php echo strtoupper($user['role']) ?>, <?php echo strtoupper($user['username']) ?></h2>
+            <h2 class="text-2xl font-bold mb-4">
+                <?= strtoupper($user['role']) ?>, <?= strtoupper($user['username']) ?>
+            </h2>
             <ul>
-                <li>
-                    <a href="../dashboard.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
-                        <i class="fa-solid fa-gauge"></i>
-                        <p>Dashboard</p>
-                    </a>
-                </li>
-                <li>
-                    <a href="../medicine/main_medicine.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
-                        <i class="fa-solid fa-pills"></i>
-                        <p>Manage Medicines</p>
-                    </a>
-                </li>
-                <li>
-                    <a href="main_sales.php" class="bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
-                        <i class="fa-solid fa-money-bill"></i>
-                        <p>Sales</p>
-                    </a>
-                </li>
-                <li>
-                    <a href="./users/main_users.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
-                        <i class="fa-solid fa-user"></i>
-                        <p>Users</p>
-                    </a>
-                </li>
-                <li>
-                    <a href="../../includes/auth.php?action=logout" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        <p>Logout</p>
-                    </a>
-                </li>
+                <li><a href="../dashboard.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2"><i class="fa-solid fa-gauge"></i> Dashboard</a></li>
+                <li><a href="../medicine/main_medicine.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2"><i class="fa-solid fa-pills"></i> Manage Medicine</a></li>
+                <li><a href="main_sales.php" class="bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2"><i class="fa-solid fa-money-bill"></i> Sales</a></li>
+                <li><a href="./users/main_users.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2"><i class="fa-solid fa-user"></i> Users</a></li>
+                <li><a href="../../includes/auth.php?action=logout" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
             </ul>
         </div>
 
         <!-- Main Content -->
         <div class="flex-1">
-            <h1 class="text-3xl text-white p-4 mb-6 font-bold bg-gray-600 w-full sticky top-0 z-50">Edit Medicine</h1>
+            <h1 class="text-3xl text-white p-4 mb-6 font-bold bg-gray-600 w-full sticky top-0 z-50">Edit Sale</h1>
             <?php if (isset($_GET['error'])): ?>
                 <p class="text-red-500"><?= htmlspecialchars($_GET['error']) ?></p>
             <?php endif; ?>
+
             <div class="flex flex-col items-center">
                 <form method="POST" class="bg-white p-6 rounded shadow-md w-11/12">
                     <input type="hidden" name="action" value="update">
-                    <input type="hidden" name="id" value="<?php echo htmlspecialchars($medicine['id']); ?>">
+                    <input type="hidden" id="id" name="id" value="<?= htmlspecialchars($sale['id']); ?>">
+
                     <div class="mb-4">
-                        <label for="name" class="block text-gray-700 font-bold">Medicine Name</label>
-                        <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($medicine['name']); ?>" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <label for="medicine" class="block text-gray-700 font-bold">Medicine Name</label>
+                        <input type="text" id="medicine" name="medicine" value="<?= htmlspecialchars($sale['medicine']); ?>"
+                            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            oninput="fetchSuggestions()" onblur="closeSuggestions()">
+                        <div id="suggestions" class="border rounded mt-2"></div>
                     </div>
+
                     <div class="mb-4">
-                        <label for="category" class="block text-gray-700 font-bold">Category</label>
-                        <input type="text" id="category" name="category" value="<?php echo htmlspecialchars($medicine['category']); ?>" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <label for="quantity" class="block text-gray-700 font-bold">Quantity</label>
+                        <input type="number" id="quantity" name="quantity" value="<?= htmlspecialchars($sale['quantity']); ?>"
+                            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            oninput="countPrice()">
                     </div>
+
                     <div class="mb-4">
-                        <label for="stock" class="block text-gray-700 font-bold">Stock</label>
-                        <input type="number" id="stock" name="stock" value="<?php echo htmlspecialchars($medicine['stock']); ?>" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <label for="total_price_display" class="block text-gray-700 font-bold">Total Price</label>
+                        <input disabled type="number" id="total_price_display" name="total_price_display" value="<?= htmlspecialchars($sale['total_price']); ?>"
+                            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <input type="hidden" id="total_price" name="total_price" value="<?= htmlspecialchars($sale['total_price']); ?>">
                     </div>
+
                     <div class="mb-4">
-                        <label for="price" class="block text-gray-700 font-bold">Price (Rp.)</label>
-                        <input type="number" id="price" name="price" value="<?php echo htmlspecialchars($medicine['price']); ?>" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <label for="sold_by_display" class="block text-gray-700 font-bold">Sold By</label>
+                        <input disabled type="text" id="sold_by_display" name="sold_by_display" value="<?= htmlspecialchars($sale['sold_by']); ?>"
+                            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <input type="hidden" id="sold_by" name="sold_by" value="<?php echo $user['username'] ?>">
                     </div>
+
                     <div class="flex justify-between">
-                        <a href="main_medicine.php" class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel</a>
+                        <a href="main_sales.php" class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel</a>
                         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500">Update</button>
                     </div>
                 </form>
@@ -125,5 +122,94 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         </div>
     </div>
 </body>
+<script>
+    let suggestionClicked = false;
+    // let id = document.getElementById('id').value;
+    // let medicine = document.getElementById('medicine').value;
+    // let quantity = document.getElementById('quantity').value;
+    // let total_price = document.getElementById('total_price').value;
+    // let sold_by = document.getElementById('sold_by').value;
+    // console.log(id)
+    // console.log(medicine)
+    // console.log(quantity)
+    // console.log(total_price)
+    // console.log(sold_by)
+
+    function fetchSuggestions() {
+        const medicineName = document.getElementById('medicine').value;
+        if (medicineName.length >= 3) {
+            fetch('create_sales.php?action=fetch_suggestions&name=' + medicineName)
+                .then(response => response.json())
+                .then(data => {
+                    const suggestionsDiv = document.getElementById('suggestions');
+                    suggestionsDiv.innerHTML = '';
+                    data.forEach(medicine => {
+                        const div = document.createElement('div');
+                        div.textContent = medicine.name;
+                        div.classList.add('suggestion-item', 'p-2', 'hover:bg-gray-200', 'cursor-pointer', 'text-sm', "rounded", "border-b", "text-gray-700");
+                        div.onclick = () => {
+                            document.getElementById('medicine').value = medicine.name;
+                            suggestionsDiv.innerHTML = '';
+                            suggestionClicked = true;
+                            countPrice();
+                        };
+                        suggestionsDiv.appendChild(div);
+                    });
+                });
+        }
+    }
+
+    function closeSuggestions() {
+        setTimeout(() => {
+            if (!suggestionClicked) {
+                document.getElementById('suggestions').innerHTML = '';
+                const medicineName = document.getElementById('medicine').value;
+                if (medicineName) {
+                    fetch('create_sales.php?action=validate_medicine&name=' + encodeURIComponent(medicineName))
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.exists) {
+                                alert('Medicine name does not exist');
+                            } else {
+                                countPrice();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error validating medicine name:', error);
+                            alert('An error occurred while validating the medicine name.');
+                        });
+                }
+            }
+            suggestionClicked = false;
+        }, 200);
+    }
+
+    function countPrice() {
+        const quantity = document.getElementById('quantity').value;
+        const medicine = document.getElementById('medicine').value;
+
+        if (!medicine || quantity <= 0) {
+            alert('Please enter valid medicine name and quantity.');
+            return;
+        }
+
+        fetch('create_sales.php?action=fetch_medicine&name=' + encodeURIComponent(medicine))
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.price) {
+                    const price = data.price;
+                    const totalPrice = price * quantity;
+                    document.getElementById('total_price').value = totalPrice;
+                    document.getElementById('total_price_display').value = totalPrice;
+                } else {
+                    alert('Failed to fetch price for the selected medicine.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching medicine price:', error);
+                alert('An error occurred while calculating the total price.');
+            });
+    }
+</script>
 
 </html>

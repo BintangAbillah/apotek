@@ -40,31 +40,54 @@ function createSale($medicine_name, $quantity, $total_price, $sold_by)
         ':sold_by' => $sold_by,
         ':deleted' => $deleted
     ]);
-    
 }
 
 // Get a single sale by ID
 function getSaleById($id)
 {
     global $conn;
-    $query = "SELECT id, name, category, stock, price FROM sales WHERE id = :id AND deleted!='*'";
+    $query = "
+        SELECT 
+            s.id, 
+            s.medicine_id, 
+            m.name AS medicine, 
+            s.quantity, 
+            s.total_price, 
+            s.sold_by, 
+            s.sale_date
+        FROM 
+            sales s
+        JOIN 
+            medicines m ON s.medicine_id = m.id 
+        WHERE 
+            s.id = :id 
+            AND s.deleted != '*'
+    ";
     $stmt = $conn->prepare($query);
     $stmt->execute([':id' => $id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 // Update a sale
-function updateSale($id, $name, $category, $stock, $price)
+function updateSale($id, $medicine_name, $quantity, $total_price, $sold_by)
 {
     global $conn;
-    $query = "UPDATE sales SET name = :name, category = :category, stock = :stock, price = :price WHERE id = :id";
+    // get medicine id
+    $medQuery = "SELECT id FROM medicines WHERE name = :medicine_name";
+    $stmt = $conn->prepare($medQuery);
+    $stmt->bindParam(':medicine_name', $medicine_name);
+    $stmt->execute();
+    $medId = $stmt->fetchColumn();
+
+    
+    $query = "UPDATE sales SET medicine_id = :medicine_id, quantity = :quantity, total_price = :total_price, sold_by = :sold_by WHERE id = :id";
     $stmt = $conn->prepare($query);
     return $stmt->execute([
-        ':id' => $id,
-        ':name' => $name,
-        ':category' => $category,
-        ':stock' => $stock,
-        ':price' => $price
+        ':medicine_id' => $medId,
+        ':quantity' => $quantity,
+        ':total_price' => $total_price,
+        ':sold_by' => $sold_by,
+        ':id' => $id
     ]);
 }
 
