@@ -116,12 +116,12 @@ if (isset($_GET['action'])) {
                     <input type="hidden" name="action" value="create">
                     <div class="mb-4">
                         <label for="medicine" class="block text-gray-700 font-bold">Medicine Name</label>
-                        <input type="text" id="medicine" name="medicine" placeholder="Enter medicine name" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" oninput="fetchSuggestions()">
+                        <input type="text" id="medicine" name="medicine" placeholder="Enter medicine name" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" oninput="fetchSuggestions()" onblur="closeSuggestions()">
                         <div id="suggestions" class="border rounded mt-2"></div>
                     </div>
                     <div class="mb-4">
                         <label for="quantity" class="block text-gray-700 font-bold">Quantity</label>
-                        <input type="number" id="quantity" name="quantity" value="1" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" onblur="countPrice()">
+                        <input type="number" id="quantity" name="quantity" value="1" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" oninput="countPrice()">
                     </div>
                     <div class="mb-4">
                         <label for="total_price_display" class="block text-gray-700 font-bold">Total Price</label>
@@ -143,6 +143,8 @@ if (isset($_GET['action'])) {
     </div>
 </body>
 <script>
+    let suggestionClicked = false;
+
     function fetchSuggestions() {
         const medicineName = document.getElementById('medicine').value;
         if (medicineName.length >= 3) {
@@ -154,10 +156,12 @@ if (isset($_GET['action'])) {
                     data.forEach(medicine => {
                         const div = document.createElement('div');
                         div.textContent = medicine.name;
-                        div.classList.add('suggestion-item');
+                        div.classList.add('suggestion-item', 'p-2', 'hover:bg-gray-200', 'cursor-pointer', 'text-sm', "rounded", "border-b", "text-gray-700");
                         div.onclick = () => {
                             document.getElementById('medicine').value = medicine.name;
                             suggestionsDiv.innerHTML = '';
+                            suggestionClicked = true;
+                            countPrice();
                         };
                         suggestionsDiv.appendChild(div);
                     });
@@ -165,10 +169,34 @@ if (isset($_GET['action'])) {
         }
     }
 
+    function closeSuggestions() {
+        setTimeout(() => {
+            if (!suggestionClicked) {
+                document.getElementById('suggestions').innerHTML = '';
+                const medicineName = document.getElementById('medicine').value;
+                if (medicineName) {
+                    fetch('create_sales.php?action=validate_medicine&name=' + encodeURIComponent(medicineName))
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.exists) {
+                                alert('Medicine name does not exist');
+                            } else {
+                                countPrice();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error validating medicine name:', error);
+                            alert('An error occurred while validating the medicine name.');
+                        });
+                }
+            }
+            suggestionClicked = false; 
+        }, 200);
+    }
+
     function countPrice() {
         const quantity = document.getElementById('quantity').value;
         const medicine = document.getElementById('medicine').value;
-        console.log('quantity:', quantity);
 
         if (!medicine || quantity <= 0) {
             alert('Please enter valid medicine name and quantity.');
@@ -183,9 +211,8 @@ if (isset($_GET['action'])) {
                     const totalPrice = price * quantity;
                     document.getElementById('total_price_display').value = totalPrice;
                     document.getElementById('total_price').value = totalPrice;
-                    console.log('totalPrice:', totalPrice);
                 } else {
-                    alert('Wrong medicine name.');
+                    alert('Failed to fetch price for the selected medicine.');
                 }
             })
             .catch(error => {
