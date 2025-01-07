@@ -15,7 +15,12 @@ $user = $_SESSION['user'];
 
 // fetch and validate medicine
 if (isset($_GET['action'])) {
-    if ($_GET['action'] == 'fetch_suggestions') {
+    if ($_GET['action'] == 'fetch_medicine') {
+        $medicineName = $_GET['name'];
+        $medicine = getMedicineByName($medicineName);
+        echo json_encode($medicine);
+        exit;
+    } elseif ($_GET['action'] == 'fetch_suggestions') {
         $medicineName = $_GET['name'];
         $medicines = fetchMedicineSuggestions($medicineName);
         echo json_encode($medicines);
@@ -41,16 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     } else {
         header("Location: ../../views/sales/create_sales.php?error=Failed to create sale");
         exit();
-    }
-}
-
-// get medicine price
-if (isset($_GET['action'])) {
-    if ($_GET['action'] == 'fetch_medicine') {
-        $medicineName = $_GET['name'];
-        $medicine = getMedicineByName($medicineName);
-        echo json_encode($medicine);
-        exit;
     }
 }
 

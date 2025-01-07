@@ -144,7 +144,7 @@ $sales = getSales();
 
         function softDeleteSale(id) {
             if (confirm("Are you sure you want to delete this sale?")) {
-                fetch(`../../includes/sale.php?action=soft_delete&id=${id}`, {
+                fetch(`../../includes/sales.php?action=soft_delete&id=${id}`, {
                         method: 'GET',
                     })
                     .then(response => response.text())
