@@ -28,6 +28,16 @@ $medicines = getMedicines();
     <!-- fontawesome -->
     <script src="https://kit.fontawesome.com/54e497b2de.js" crossorigin="anonymous"></script>
 </head>
+<style>
+    #profile-dropdown ul li {
+        padding: 8px 16px;
+        cursor: pointer;
+    }
+
+    #profile-dropdown ul li:hover {
+        background-color: #f3f4f6;
+    }
+</style>
 
 <body class="bg-gray-100">
     <div class="flex">
@@ -53,12 +63,14 @@ $medicines = getMedicines();
                         <p>Sales</p>
                     </a>
                 </li>
-                <li>
-                    <a href="./users/main_users.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
-                        <i class="fa-solid fa-user"></i>
-                        <p>Users</p>
-                    </a>
-                </li>
+                <?php if ($user['role'] === "admin"): ?>
+                    <li>
+                        <a href="../users/main_users.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
+                            <i class="fa-solid fa-user"></i>
+                            <p>Users</p>
+                        </a>
+                    </li>
+                <?php endif; ?>
                 <li>
                     <a href="../../includes/auth.php?action=logout" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
                         <i class="fa-solid fa-right-from-bracket"></i>
@@ -70,7 +82,18 @@ $medicines = getMedicines();
 
         <!-- Main Dashboard -->
         <div class="flex-1">
-            <h1 class="text-3xl text-white p-4 mb-6 font-bold bg-gray-600 w-full sticky top-0 z-50">Manage Medicine</h1>
+            <div class="flex mb-6 items-center justify-start bg-gray-600 sticky top-0 z-50">
+                <h1 class="text-3xl text-white p-4 font-bold w-11/12">Manage Medicine</h1>
+                <div class="relative text-3xl text-white p-4 font-bold">
+                    <div id="profile-icon" class="border px-2 py-1 rounded-full cursor-pointer hover:bg-gray-700">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div id="profile-dropdown" class="absolute right-0 mt-2 w-48 bg-white text-gray-700 rounded shadow-md hidden">
+                        <ul id="dropdown-menu" class="py-2">
+                        </ul>
+                    </div>
+                </div>
+            </div>
             <div class="flex flex-col items-center">
                 <div class="flex items-start w-11/12">
                     <a href="create_medicine.php" class="bg-blue-800 text-white px-4 py-2 mb-4 rounded hover:bg-blue-700 hover:underline">Add Medicine</a>
@@ -138,6 +161,41 @@ $medicines = getMedicines();
                     "zeroRecords": "No matching records found"
                 }
             });
+        });
+
+        document.getElementById('profile-icon').addEventListener('click', function() {
+            const dropdown = document.getElementById('profile-dropdown');
+            dropdown.classList.toggle('hidden');
+
+            // Check if dropdown is visible before fetching
+            if (!dropdown.classList.contains('hidden')) {
+                fetch('../../elements/profile_menu.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        const dropdownMenu = document.getElementById('dropdown-menu');
+                        dropdownMenu.innerHTML = '';
+
+                        data.forEach(item => {
+                            const li = document.createElement('li');
+                            li.textContent = item.label;
+                            li.className = 'hover:bg-gray-100, text-sm';
+                            li.onclick = () => window.location.href = item.link;
+                            dropdownMenu.appendChild(li);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching profile menu:', error);
+                        alert('Failed to load profile menu.');
+                    });
+            }
+        });
+
+        // Hide dropdown if clicked outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('profile-dropdown');
+            if (!document.getElementById('profile-icon').contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
         });
 
         function softDeleteMedicine(id) {

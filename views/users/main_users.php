@@ -3,14 +3,20 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 include '../../includes/auth.php';
-include '../../includes/sales.php';
+include '../../includes/users.php';
 if (!isLoggedIn()) {
     header("Location: ../../auth/login.php");
     exit();
 }
 
 $user = $_SESSION['user'];
-$sales = getSales();
+
+if ($user['role'] !== "admin") {
+    header("Location: ../../views/dashboard.php");
+    exit();
+}
+
+$users = getUsers();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -58,14 +64,14 @@ $sales = getSales();
                     </a>
                 </li>
                 <li>
-                    <a href="main_sales.php" class="bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
+                    <a href="../sales/main_sales.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
                         <i class="fa-solid fa-money-bill"></i>
                         <p>Sales</p>
                     </a>
                 </li>
                 <?php if ($user['role'] === "admin"): ?>
                     <li>
-                        <a href="../users/main_users.php" class="hover:bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
+                        <a href="main_users.php" class="bg-gray-700 py-2 pl-4 rounded-md block flex items-center gap-2">
                             <i class="fa-solid fa-user"></i>
                             <p>Users</p>
                         </a>
@@ -83,7 +89,7 @@ $sales = getSales();
         <!-- Main Dashboard -->
         <div class="flex-1">
             <div class="flex mb-6 items-center justify-start bg-gray-600 sticky top-0 z-50">
-                <h1 class="text-3xl text-white p-4 font-bold w-11/12">Manage Sale</h1>
+                <h1 class="text-3xl text-white p-4 font-bold w-11/12">Manage User</h1>
                 <div class="relative text-3xl text-white p-4 font-bold">
                     <div id="profile-icon" class="border px-2 py-1 rounded-full cursor-pointer hover:bg-gray-700">
                         <i class="fa-solid fa-user"></i>
@@ -96,38 +102,42 @@ $sales = getSales();
             </div>
             <div class="flex flex-col items-center">
                 <div class="flex items-start w-11/12">
-                    <a href="create_sales.php" class="bg-blue-800 text-white px-4 py-2 mb-4 rounded hover:bg-blue-700 hover:underline">Add Sale</a>
+                    <a href="create_user.php" class="bg-blue-800 text-white px-4 py-2 mb-4 rounded hover:bg-blue-700 hover:underline">Add User</a>
                 </div>
                 <div class="on w-11/12">
-                    <table id="saleTable" class="min-w-full table-auto border-collapse border border-gray-300">
+                    <table id="userTable" class="min-w-full table-auto border-collapse border border-gray-300">
                         <thead class="bg-blue-500 text-white">
                             <tr>
                                 <th class="border border-gray-300 px-4 py-2">ID</th>
-                                <th class="border border-gray-300 px-4 py-2">Medicine</th>
-                                <th class="border border-gray-300 px-4 py-2">Quantity</th>
-                                <th class="border border-gray-300 px-4 py-2">Total Price</th>
-                                <th class="border border-gray-300 px-4 py-2">Sold By</th>
-                                <th class="border border-gray-300 px-4 py-2">Sale Date</th>
+                                <th class="border border-gray-300 px-4 py-2">Username</th>
+                                <th class="border border-gray-300 px-4 py-2">Role</th>
+                                <th class="border border-gray-300 px-4 py-2">Active</th>
+                                <th class="border border-gray-300 px-4 py-2">Created</th>
                                 <th class="border border-gray-300 px-4 py-2">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($sales)): ?>
+                            <?php if (empty($users)): ?>
                                 <tr>
-                                    <td colspan="6" class="text-center py-4">No sales available.</td>
+                                    <td colspan="6" class="text-center py-4">No users available.</td>
                                 </tr>
                             <?php else: ?>
-                                <?php foreach ($sales as $sale): ?>
+                                <?php foreach ($users as $user): ?>
                                     <tr class="bg-gray-100 hover:bg-gray-200 active:bg-gray-300">
-                                        <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($sale['id']); ?></td>
-                                        <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($sale['medicine']); ?></td>
-                                        <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($sale['quantity']); ?></td>
-                                        <td class="border border-gray-300 px-4 py-2">Rp. <?= number_format(htmlspecialchars($sale['total_price']), 0, ',', '.'); ?></td>
-                                        <td class="border border-gray-300 px-4 py-2"><?= $sale['sold_by'] ?></td>
-                                        <td class="border border-gray-300 px-4 py-2"><?= $sale['sale_date'] ?></td>
+                                        <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($user['id']); ?></td>
+                                        <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($user['username']); ?></td>
+                                        <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($user['role']); ?></td>
+                                        <td class="border border-gray-300 px-4 py-2">
+                                            <?php if ($user['isActive'] === 1): ?>
+                                                Active
+                                            <?php else: ?>
+                                                Inactive
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="border border-gray-300 px-4 py-2"><?= $user['created'] ?></td>
                                         <td class="border border-gray-300 px-4 py-2 flex gap-2">
-                                            <div class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-400"><a href="edit_sales.php?id=<?= $sale['id'] ?>"><i class="fa-solid fa-pen-to-square"></i></a></div>
-                                            <div class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-400 cursor-pointer" onclick="softDeleteSale(<?php echo $sale['id']; ?>)"><i class="fa-solid fa-trash"></i></div>
+                                            <div class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-400"><a href="edit_user.php?id=<?= $user['id'] ?>"><i class="fa-solid fa-pen-to-square"></i></a></div>
+                                            <div class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-400 cursor-pointer" onclick="softDeleteUser(<?php echo $user['id']; ?>)"><i class="fa-solid fa-trash"></i></div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -140,7 +150,7 @@ $sales = getSales();
     </div>
     <script>
         $(document).ready(function() {
-            $('#saleTable').DataTable({
+            $('#userTable').DataTable({
                 "responsive": true,
                 "scrollX": true,
                 "autoWidth": true,
@@ -165,18 +175,18 @@ $sales = getSales();
             });
         });
 
-        function softDeleteSale(id) {
-            if (confirm("Are you sure you want to delete this sale?")) {
-                fetch(`../../includes/sales.php?action=soft_delete&id=${id}`, {
+        function softDeleteUser(id) {
+            if (confirm("Are you sure you want to delete this user?")) {
+                fetch(`../../includes/users.php?action=soft_delete&id=${id}`, {
                         method: 'GET',
                     })
                     .then(response => response.text())
                     .then(data => {
                         if (data === 'success') {
-                            alert('Sale deleted successfully!');
+                            alert('User deleted successfully!');
                             window.location.reload();
                         } else {
-                            alert('Failed to delete sale: ' + data);
+                            alert('Failed to delete user: ' + data);
                         }
                     })
                     .catch(error => console.error('Error:', error));

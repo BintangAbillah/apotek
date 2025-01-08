@@ -7,8 +7,8 @@ function registerUser($username, $password, $role = 'user') {
     global $conn;
 
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-
-    $query = "INSERT INTO users (username, password, role) VALUES (:username, :password, :role)";
+    $deleted = "";
+    $query = "INSERT INTO users (username, password, role, deleted) VALUES (:username, :password, :role, :deleted)";
     $stmt = $conn->prepare($query);
     
     if (checkUsername($username)) {
@@ -19,7 +19,8 @@ function registerUser($username, $password, $role = 'user') {
         $stmt->execute([
             ':username' => $username,
             ':password' => $hashedPassword,
-            ':role' => $role
+            ':role' => $role,
+            ':deleted' => $deleted
         ]);
         return true;
     } catch (Exception $e) {

@@ -2,7 +2,8 @@
 include 'db.php';
 
 // Get all medicines
-function getMedicines() {
+function getMedicines()
+{
     global $conn;
 
     $query = "SELECT * FROM medicines WHERE deleted!='*'";
@@ -13,9 +14,10 @@ function getMedicines() {
 }
 
 // Get a single medicine by ID
-function getMedicineById($id) {
+function getMedicineById($id)
+{
     global $conn;
-    $query = "SELECT id, name, price FROM medicines WHERE id = :id AND deleted != '*'";
+    $query = "SELECT id, name, price, category, stock FROM medicines WHERE id = :id AND deleted != '*'";
     $stmt = $conn->prepare($query);
     $stmt->bindValue(':id', $id, PDO::PARAM_INT);
     $stmt->execute();
@@ -24,7 +26,8 @@ function getMedicineById($id) {
 
 
 // Get a single medicine by ID
-function getMedicineByName($name) {
+function getMedicineByName($name)
+{
     global $conn;
     $query = "SELECT price FROM medicines WHERE name = :name AND deleted != '*'";
     $stmt = $conn->prepare($query);
@@ -36,7 +39,8 @@ function getMedicineByName($name) {
 
 
 // Fetch medicine suggestions
-function fetchMedicineSuggestions($name) {
+function fetchMedicineSuggestions($name)
+{
     global $conn;
     $query = "SELECT name FROM medicines WHERE LOWER(name) LIKE LOWER(:name) AND deleted!='*' LIMIT 10";
     $stmt = $conn->prepare($query);
@@ -46,7 +50,8 @@ function fetchMedicineSuggestions($name) {
 }
 
 // Validate medicine name
-function validateMedicine($name) {
+function validateMedicine($name)
+{
     global $conn;
     $query = "SELECT COUNT(*) FROM medicines WHERE name = :name";
     $stmt = $conn->prepare($query);
@@ -56,7 +61,8 @@ function validateMedicine($name) {
 }
 
 // Create a new medicine
-function createMedicine($name, $category, $stock, $price) {
+function createMedicine($name, $category, $stock, $price)
+{
     global $conn;
     $deleted = "";
     $query = "INSERT INTO medicines (name, category, stock, price, deleted) VALUES (:name, :category, :stock, :price, :deleted)";
@@ -72,7 +78,8 @@ function createMedicine($name, $category, $stock, $price) {
 
 
 // Update a medicine
-function updateMedicine($id, $name, $category, $stock, $price) {
+function updateMedicine($id, $name, $category, $stock, $price)
+{
     global $conn;
     $query = "UPDATE medicines SET name = :name, category = :category, stock = :stock, price = :price WHERE id = :id";
     $stmt = $conn->prepare($query);
@@ -86,7 +93,8 @@ function updateMedicine($id, $name, $category, $stock, $price) {
 }
 
 // Delete a medicine
-function deleteMedicine($id) {
+function deleteMedicine($id)
+{
     global $conn;
     $query = "DELETE FROM medicines WHERE id = :id";
     $stmt = $conn->prepare($query);
@@ -105,10 +113,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'soft_delete' && isset($_GET['
 }
 
 // Soft delete a medicine
-function softDeleteMedicine($id) {
+function softDeleteMedicine($id)
+{
     global $conn;
     $query = "UPDATE medicines SET deleted = '*' WHERE id = :id";
     $stmt = $conn->prepare($query);
     return $stmt->execute([':id' => $id]);
 }
-?>
