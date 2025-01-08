@@ -34,11 +34,12 @@ if (!$user) {
 
 // post request to edit user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update') {
+    $full_name = $_POST['full_name'];
     $username = $_POST['username'];
     $role = $_POST['role'];
     $isActive = $_POST['isActive'];
 
-    if (updateUser($username, $role, $isActive)) {
+    if (updateUser($full_name, $username, $role, $isActive)) {
         header("Location: ../../views/users/main_users.php?success=User updated successfully");
         exit();
     } else {
@@ -131,8 +132,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             <div class="flex flex-col items-center">
                 <form method="POST" class="bg-white p-6 rounded shadow-md w-11/12">
                     <input type="hidden" name="action" value="update">
-                    <input type="hidden" id="id" name="id" value="<?= htmlspecialchars($userData['id']); ?>">
 
+                    <div class="mb-4">
+                        <label for="full_name" class="block text-gray-700 font-bold">Full Name</label>
+                        <input type="text" id="full_name" name="full_name" value="<?= htmlspecialchars($userData['fullName']); ?>" placeholder="Enter Full Name" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+                    </div>
                     <div class="mb-4">
                         <label for="username_display" class="block text-gray-700 font-bold">Username</label>
                         <input type="text" id="username_display" name="username_display" value="<?= htmlspecialchars($userData['username']); ?>" placeholder="Enter Username" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" disabled>
@@ -146,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         </select>
                     </div>
                     <div class="mb-4">
-                        <label for="isActive" class="block text-gray-700 font-bold">isActive</label>
+                        <label for="isActive" class="block text-gray-700 font-bold">Acitve</label>
                         <select id="isActive" name="isActive" class="border p-2 w-full mb-4" required>
                             <option value="active" <?= $userData['isActive'] === '1' ? 'selected' : '' ?>>Active</option>
                             <option value="inactive" <?= $userData['isActive'] === '0' ? 'selected' : '' ?>>Inactive</option>

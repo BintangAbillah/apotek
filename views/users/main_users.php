@@ -109,6 +109,7 @@ $users = getUsers();
                         <thead class="bg-blue-500 text-white">
                             <tr>
                                 <th class="border border-gray-300 px-4 py-2">ID</th>
+                                <th class="border border-gray-300 px-4 py-2">Full Name</th>
                                 <th class="border border-gray-300 px-4 py-2">Username</th>
                                 <th class="border border-gray-300 px-4 py-2">Role</th>
                                 <th class="border border-gray-300 px-4 py-2">Active</th>
@@ -125,6 +126,7 @@ $users = getUsers();
                                 <?php foreach ($users as $user): ?>
                                     <tr class="bg-gray-100 hover:bg-gray-200 active:bg-gray-300">
                                         <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($user['id']); ?></td>
+                                        <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($user['fullName']); ?></td>
                                         <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($user['username']); ?></td>
                                         <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($user['role']); ?></td>
                                         <td class="border border-gray-300 px-4 py-2">

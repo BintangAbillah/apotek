@@ -28,7 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="text" name="username" placeholder="Username" class="border p-2 w-full mb-4" required>
         <input type="password" name="password" placeholder="Password" class="border p-2 w-full mb-4" required>
         <button type="submit" class="w-full bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded">Login</button>
-        <p class="flex justify-center text-xs">Don't have an account? <a href="register.php" class="mx-1 text-blue-600 hover:underline hover:text-blue-500">Register</a></p>
+        <div class="w-full flex justify-between">
+            <p class="flex justify-center text-xs">Don't have an account? <a href="register.php" class="mx-1 text-blue-600 hover:underline hover:text-blue-500">Register</a></p>
+            <p class="flex justify-center text-xs">Forgot password? <a href="reset_password.php" class="mx-1 text-red-600 hover:underline hover:text-red-500">Reset</a></p>
+        </div>
     </form>
 </body>
 </html>

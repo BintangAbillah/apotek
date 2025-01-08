@@ -13,6 +13,17 @@ function getMedicines()
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function getMedicinesStock()
+{
+    global $conn;
+
+    $query = "SELECT SUM(stock) as totalStock FROM medicines WHERE deleted!='*'";
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
+
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
 // Get a single medicine by ID
 function getMedicineById($id)
 {

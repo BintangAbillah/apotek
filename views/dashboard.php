@@ -1,5 +1,8 @@
 <?php
 include '../includes/auth.php';
+include '../includes/users.php';
+include '../includes/medicine.php';
+include '../includes/sales.php';
 
 if (!isLoggedIn()) {
     header("Location: ../auth/login.php");
@@ -8,6 +11,9 @@ if (!isLoggedIn()) {
 
 $user = $_SESSION['user'];
 
+$userCount = countUsers();
+$medicinesStock = getMedicinesStock();
+$salesCount = countSales();
 
 ?>
 <!DOCTYPE html>
@@ -87,19 +93,19 @@ $user = $_SESSION['user'];
                 <!-- Active Users -->
                 <div class="bg-white p-6 rounded shadow-md">
                     <h2 class="text-xl font-semibold mb-2">Active Users</h2>
-                    <p class="text-3xl font-bold"><?= $activeUsers ?></p>
+                    <p class="text-3xl font-bold"><?= $userCount["Total"] ?></p>
                 </div>
 
                 <!-- Total Medicines Sold -->
                 <div class="bg-white p-6 rounded shadow-md">
                     <h2 class="text-xl font-semibold mb-2">Total Medicines Sold</h2>
-                    <p class="text-3xl font-bold"><?= $medicinesSold ?></p>
+                    <p class="text-3xl font-bold">Rp. <?= number_format(htmlspecialchars($salesCount["income"]), 0, ',', '.'); ?></p>
                 </div>
 
                 <!-- Medicine Stock -->
                 <div class="bg-white p-6 rounded shadow-md">
                     <h2 class="text-xl font-semibold mb-2">Medicine Stock</h2>
-                    <p class="text-3xl font-bold"><?= $medicineStock ?></p>
+                    <p class="text-3xl font-bold"><?= $medicinesStock["totalStock"] ?></p>
                 </div>
             </div>
         </div>

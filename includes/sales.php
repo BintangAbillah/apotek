@@ -16,6 +16,17 @@ function getSales()
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+// count total sales
+function countSales()
+{
+    global $conn;
+
+    $query = "SELECT SUM(total_price) as income FROM sales WHERE deleted!='*'";
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
+
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
 // Create a new sale
 function createSale($medicine_name, $quantity, $total_price, $sold_by)

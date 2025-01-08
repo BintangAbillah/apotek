@@ -19,11 +19,12 @@ if ($user['role'] !== "admin") {
 
 // post request to create user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create') {
+    $full_name = $_POST['full_name'];
     $username = $_POST['username'];
     $password = $_POST['password'];
     $role = $_POST['role'];
 
-    if (createUser($username, $password, $role)) {
+    if (createUser($full_name, $username, $password, $role)) {
         header("Location: ../../views/users/main_users.php?success=User created successfully");
         exit();
     } else {
@@ -115,6 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             <div class="flex flex-col items-center">
                 <form method="POST" class="bg-white p-6 rounded shadow-md w-11/12">
                     <input type="hidden" name="action" value="create">
+                    <div class="mb-4">
+                        <label for="full_name" class="block text-gray-700 font-bold">Full Name</label>
+                        <input type="text" id="full_name" name="full_name" placeholder="Enter Full Name" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+                    </div>
                     <div class="mb-4">
                         <label for="username" class="block text-gray-700 font-bold">Username</label>
                         <input type="text" id="username" name="username" placeholder="Enter Username" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
